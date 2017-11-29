@@ -3,6 +3,7 @@ package eu.allan.quickcalendar.quickcalendar;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -24,8 +25,10 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.provider.CalendarContract.*;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
@@ -69,8 +72,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             }
         });
         textInput.addTextChangedListener(new TextWatcher() {
-            public void afterTextChanged(Editable s) {}
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            public void afterTextChanged(Editable s) {
+            }
+
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
             public void onTextChanged(CharSequence s, int start, int before, int count) {
 
                 TextView myOutputBox = (TextView) findViewById(R.id.text_output);
@@ -80,12 +87,60 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             }
         });
     }
-
-    private void createReminder(){
+    private long findCalId(){
+        long l = 0L;
+        
+        return l;
+    }
+    private void createReminder() {
         QuickCalendar qc = new QuickCalendar(this.textInput.getText().toString(), MainActivity.this);
         Toast.makeText(MainActivity.this, qc.getTheDateString() + "\n" + qc.getTheText(), Toast.LENGTH_LONG).show();
     }
 
+    public void createEvent() {
+
+        QuickCalendar qc = new QuickCalendar(this.textInput.getText().toString(), MainActivity.this);
+        Toast.makeText(MainActivity.this, qc.getTheDateString() + "\n" + qc.getTheText(), Toast.LENGTH_LONG).show();
+
+        long calID = 3;
+        long startMillis = 0;
+        long endMillis = 0;
+        Calendar beginTime = Calendar.getInstance();
+        beginTime.set(2012, 9, 14, 7, 30);
+        startMillis = beginTime.getTimeInMillis();
+        Calendar endTime = Calendar.getInstance();
+        endTime.set(2012, 9, 14, 8, 45);
+        endMillis = endTime.getTimeInMillis();
+
+
+        ContentResolver cr = getContentResolver();
+        ContentValues values = new ContentValues();
+        values.put(Events.DTSTART, startMillis);
+        values.put(Events.DTEND, endMillis);
+        values.put(Events.TITLE, "Jazzercise");
+        values.put(Events.DESCRIPTION, "Group workout");
+        values.put(Events.CALENDAR_ID, calID);
+        values.put(Events.EVENT_TIMEZONE, "America/Los_Angeles");
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_CALENDAR) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        Uri uri = cr.insert(Events.CONTENT_URI, values);
+
+// get the event ID that is the last element in the Uri
+        long eventID = Long.parseLong(uri.getLastPathSegment());
+//
+// ... do something with event ID
+//
+//
+
+    }
     private void doCreateSpinner() {
         String selection = "(" + CalendarContract.Calendars.CALENDAR_ACCESS_LEVEL + " =  ? OR "
                 + CalendarContract.Calendars.CALENDAR_ACCESS_LEVEL + " =  ? OR "

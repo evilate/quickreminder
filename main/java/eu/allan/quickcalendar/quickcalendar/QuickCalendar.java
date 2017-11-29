@@ -44,11 +44,10 @@ public class QuickCalendar {
         //this.theDateString = pattern;
         SimpleDateFormat df = new SimpleDateFormat("HH:mm " + pattern);
         df.setTimeZone(TimeZone.getTimeZone("GMT"));
-        this.theDateString = df.format(startMillis) + " " + pattern;
+        this.theDateString = df.format(startMillis);
     }
 
     private void doSetSecondsAndString(String str){
-
         String[] splitStr = str.split("\\s+");
         String testString = splitStr[0];
         String num = "";
