@@ -30,6 +30,7 @@ import android.provider.CalendarContract.*;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.TimeZone;
 
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
 
@@ -87,40 +88,31 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             }
         });
     }
-    private long findCalId(){
-        long l = 0L;
-        
-        return l;
-    }
+
     private void createReminder() {
-        QuickCalendar qc = new QuickCalendar(this.textInput.getText().toString(), MainActivity.this);
-        Toast.makeText(MainActivity.this, qc.getTheDateString() + "\n" + qc.getTheText(), Toast.LENGTH_LONG).show();
-    }
-
-    public void createEvent() {
-
+        System.out.println("createReminder");
         QuickCalendar qc = new QuickCalendar(this.textInput.getText().toString(), MainActivity.this);
         Toast.makeText(MainActivity.this, qc.getTheDateString() + "\n" + qc.getTheText(), Toast.LENGTH_LONG).show();
 
-        long calID = 3;
-        long startMillis = 0;
-        long endMillis = 0;
-        Calendar beginTime = Calendar.getInstance();
+        long calID = getCalendarId(String.valueOf(calendarSpinner.getSelectedItem()));
+        long startMillis = qc.getTheSeconds()*1000;
+        long endMillis = qc.getTheSeconds()*1800*1000;
+/*        Calendar beginTime = Calendar.getInstance();
         beginTime.set(2012, 9, 14, 7, 30);
         startMillis = beginTime.getTimeInMillis();
         Calendar endTime = Calendar.getInstance();
         endTime.set(2012, 9, 14, 8, 45);
-        endMillis = endTime.getTimeInMillis();
+        endMillis = endTime.getTimeInMillis();*/
 
 
         ContentResolver cr = getContentResolver();
         ContentValues values = new ContentValues();
-        values.put(Events.DTSTART, startMillis);
-        values.put(Events.DTEND, endMillis);
-        values.put(Events.TITLE, "Jazzercise");
-        values.put(Events.DESCRIPTION, "Group workout");
+        values.put(Events.DTSTART, startMillis+Calendar.getInstance().getTimeInMillis());
+        values.put(Events.DTEND, endMillis+Calendar.getInstance().getTimeInMillis());
+        values.put(Events.TITLE, qc.getTheText());
+        values.put(Events.DESCRIPTION, "Quick Reminder");
         values.put(Events.CALENDAR_ID, calID);
-        values.put(Events.EVENT_TIMEZONE, "America/Los_Angeles");
+        values.put(Events.EVENT_TIMEZONE, String.valueOf(TimeZone.getDefault()));
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_CALENDAR) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
             //    ActivityCompat#requestPermissions
@@ -129,17 +121,56 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             //                                          int[] grantResults)
             // to handle the case where the user grants the permission. See the documentation
             // for ActivityCompat#requestPermissions for more details.
+            System.out.println("RETURN");
             return;
         }
         Uri uri = cr.insert(Events.CONTENT_URI, values);
 
 // get the event ID that is the last element in the Uri
         long eventID = Long.parseLong(uri.getLastPathSegment());
+        System.out.println("eventID: " + eventID);
+        System.out.println("calID: " + calID);
 //
 // ... do something with event ID
 //
 //
 
+    }
+    private long getCalendarId(String calName) {
+        long retval = 1;
+        String selection = "(" + CalendarContract.Calendars.CALENDAR_ACCESS_LEVEL + " =  ? OR "
+                + CalendarContract.Calendars.CALENDAR_ACCESS_LEVEL + " =  ? OR "
+                + CalendarContract.Calendars.CALENDAR_ACCESS_LEVEL + " =  ? OR "
+                + CalendarContract.Calendars.CALENDAR_ACCESS_LEVEL + " =  ?)";
+
+        String[] selectionArgs = new String[]{
+                Integer.toString(CalendarContract.Calendars.CAL_ACCESS_OWNER),
+                Integer.toString(CalendarContract.Calendars.CAL_ACCESS_EDITOR),
+                Integer.toString(CalendarContract.Calendars.CAL_ACCESS_CONTRIBUTOR),
+                Integer.toString(CalendarContract.Calendars.CAL_ACCESS_ROOT)};
+
+
+        final String[] EVENT_PROJECTION = new String[]{
+                CalendarContract.Calendars._ID,
+                CalendarContract.Calendars.CALENDAR_DISPLAY_NAME,
+
+        };
+
+        final ContentResolver cr = getContentResolver();
+        final Uri uri = CalendarContract.Calendars.CONTENT_URI;
+        @SuppressLint("MissingPermission") Cursor cur = cr.query(uri, EVENT_PROJECTION, selection, selectionArgs, null);
+
+        while (cur.moveToNext()) {
+        /* do something with the cursor:
+           Long id = cur.getLong(0);
+           String name = cur.getString(1);
+           int color = cur.getInt(2)));
+        */
+            if(cur.getString(1).equals(calName)){
+                retval = cur.getLong(0);
+            }
+        }
+        return retval;
     }
     private void doCreateSpinner() {
         String selection = "(" + CalendarContract.Calendars.CALENDAR_ACCESS_LEVEL + " =  ? OR "
