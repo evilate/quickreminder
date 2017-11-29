@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Quick Calendar</string>
+    <string name="lastUsedCalendar">lastUsedCalendar</string>
 </resources>
