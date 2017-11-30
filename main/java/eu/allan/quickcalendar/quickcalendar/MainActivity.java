@@ -29,6 +29,7 @@ import android.provider.CalendarContract.*;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
@@ -59,6 +60,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             this.doCreateSpinner();
         }
         textInput = (EditText) findViewById(R.id.text_input);
+        textInput.requestFocus();
         textInput.setImeActionLabel("Remind", KeyEvent.KEYCODE_ENTER);
         textInput.setOnKeyListener(new View.OnKeyListener() {
             public boolean onKey(View v, int keyCode, KeyEvent event) {
@@ -87,6 +89,16 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
             }
         });
+        Button clickButton = (Button) findViewById(R.id.remind_btn);
+        clickButton.setOnClickListener( new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                // Klikket
+                MainActivity.this.createReminder();
+
+            }
+        });
     }
 
     private void createReminder() {
@@ -96,14 +108,19 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         long calID = getCalendarId(String.valueOf(calendarSpinner.getSelectedItem()));
         long startMillis = qc.getTheSeconds()*1000;
-        long endMillis = qc.getTheSeconds()*1800*1000;
+        long endMillis = (qc.getTheSeconds()+1800)*1000;
+
+        Calendar cal = Calendar.getInstance();
+        TimeZone tz = cal.getTimeZone();
+        Date now = new Date();
+        tz.getOffset(now.getTime());
+
 /*        Calendar beginTime = Calendar.getInstance();
         beginTime.set(2012, 9, 14, 7, 30);
         startMillis = beginTime.getTimeInMillis();
         Calendar endTime = Calendar.getInstance();
         endTime.set(2012, 9, 14, 8, 45);
         endMillis = endTime.getTimeInMillis();*/
-
 
         ContentResolver cr = getContentResolver();
         ContentValues values = new ContentValues();
@@ -112,7 +129,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         values.put(Events.TITLE, qc.getTheText());
         values.put(Events.DESCRIPTION, "Quick Reminder");
         values.put(Events.CALENDAR_ID, calID);
-        values.put(Events.EVENT_TIMEZONE, String.valueOf(TimeZone.getDefault()));
+        values.put(Events.EVENT_TIMEZONE, tz.getOffset(now.getTime()));
+        values.put(Events.HAS_ALARM, true);
+
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_CALENDAR) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
             //    ActivityCompat#requestPermissions
@@ -126,10 +145,21 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
         Uri uri = cr.insert(Events.CONTENT_URI, values);
 
-// get the event ID that is the last element in the Uri
+        // get the event ID that is the last element in the Uri
         long eventID = Long.parseLong(uri.getLastPathSegment());
-        System.out.println("eventID: " + eventID);
-        System.out.println("calID: " + calID);
+
+        ContentValues reminders = new ContentValues();
+        reminders.put(Reminders.EVENT_ID, eventID);
+        reminders.put(Reminders.METHOD, Reminders.METHOD_ALERT);
+        reminders.put(Reminders.MINUTES, 0);
+
+        Uri uri2 = cr.insert(Reminders.CONTENT_URI, reminders);
+
+
+        //System.out.println("eventID: " + eventID);
+        //System.out.println("calID: " + calID);
+        //System.out.println("TimeZone: " + String.valueOf(TimeZone.getDefault()));
+        //System.out.println("tz: " + tz.getOffset(now.getTime()));
 //
 // ... do something with event ID
 //
