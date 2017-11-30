@@ -33,15 +33,11 @@ public class QuickCalendar {
     private void createDate(long secs){
 
         long startMillis = 0;
-        long endMillis = 0;
+
         Calendar beginTime = Calendar.getInstance();
         startMillis = beginTime.getTimeInMillis()+secs;
-        Calendar endTime = Calendar.getInstance();
-        endMillis = endTime.getTimeInMillis()+secs+1800000;
-
         Format dateFormat = android.text.format.DateFormat.getDateFormat(context);
         String pattern = ((SimpleDateFormat) dateFormat).toLocalizedPattern();
-        //this.theDateString = pattern;
         SimpleDateFormat df = new SimpleDateFormat("HH:mm " + pattern);
         df.setTimeZone(TimeZone.getTimeZone("GMT"));
         this.theDateString = df.format(startMillis);
@@ -80,12 +76,7 @@ public class QuickCalendar {
         }
         for(int i = n;i < splitStr.length; i++){
             this.theText += splitStr[i] + " ";
-            //System.out.println("Nummer " + i + " indeholder \"" + args[i] + "\".");
         }
-
-        //System.out.println("num " + num);
-        //System.out.println("secsModifier " + secsModifier);
-
     }
 
 

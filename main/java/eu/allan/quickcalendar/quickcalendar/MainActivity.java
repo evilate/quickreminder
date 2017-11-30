@@ -16,8 +16,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -36,6 +38,7 @@ import java.util.TimeZone;
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
 
     private static final int MY_PERMISSIONS_REQUEST_READ_CALENDAR = 0;
+    private static final String TAG = "MAINACT";
     private Spinner calendarSpinner;
     private EditText textInput;
 
@@ -62,9 +65,20 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         textInput = (EditText) findViewById(R.id.text_input);
         textInput.requestFocus();
         textInput.setImeActionLabel("Remind", KeyEvent.KEYCODE_ENTER);
+        textInput.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if ((event != null && (event.getKeyCode() == KeyEvent.KEYCODE_ENTER)) || (actionId == EditorInfo.IME_ACTION_DONE)) {
+                    //Log.i(TAG,"Enter pressed");
+                    MainActivity.this.createReminder();
+                }
+                return false;
+            }
+        });
+        /*
         textInput.setOnKeyListener(new View.OnKeyListener() {
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 // If the event is a key-down event on the "enter" button
+                System.out.println("KeyEvent: " + KeyEvent.getMaxKeyCode());
                 if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
                         (keyCode == KeyEvent.KEYCODE_ENTER)) {
                     // Perform action on key press
@@ -74,6 +88,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 return false;
             }
         });
+        */
         textInput.addTextChangedListener(new TextWatcher() {
             public void afterTextChanged(Editable s) {
             }
@@ -104,7 +119,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private void createReminder() {
         System.out.println("createReminder");
         QuickCalendar qc = new QuickCalendar(this.textInput.getText().toString(), MainActivity.this);
-        Toast.makeText(MainActivity.this, qc.getTheDateString() + "\n" + qc.getTheText(), Toast.LENGTH_LONG).show();
+
 
         long calID = getCalendarId(String.valueOf(calendarSpinner.getSelectedItem()));
         long startMillis = qc.getTheSeconds()*1000;
@@ -164,7 +179,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 // ... do something with event ID
 //
 //
-
+        Toast.makeText(MainActivity.this, qc.getTheDateString() + "\n" + qc.getTheText(), Toast.LENGTH_LONG).show();
+        this.finish();
     }
     private long getCalendarId(String calName) {
         long retval = 1;
@@ -335,8 +351,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     @Override
     public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-        Toast.makeText(MainActivity.this, "Calendar:\n"+ String.valueOf(calendarSpinner.getSelectedItem()), Toast.LENGTH_LONG).show();
-
         SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putString(getString(R.string.lastUsedCalendar), String.valueOf(calendarSpinner.getSelectedItem()));
