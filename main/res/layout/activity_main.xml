@@ -7,31 +7,38 @@
     android:paddingRight="16dp"
     android:orientation="vertical" >
 
-    <ImageView
+    <TextView
+        android:id="@+id/date_output"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:srcCompat="@drawable/add_spacer_300x100" />
-
-    <Spinner
-        android:id="@+id/cal_spinner"
-        android:layout_width="match_parent"
-        android:layout_height="36dp" />
+        android:layout_height="48dp"
+        android:textSize="40dp" />
 
     <TextView
         android:id="@+id/text_output"
         android:layout_width="match_parent"
-        android:layout_height="36dp" />
+        android:layout_height="36dp"
+        android:textSize="22dp"/>
 
     <EditText
         android:id="@+id/text_input"
         android:layout_width="match_parent"
         android:layout_height="48dp"
+        android:background="@drawable/text_input_layout"
+        android:maxLines="1"
+        android:scrollHorizontally="true"
         android:hint="1h remind me in an hour" />
+
+    <Spinner
+        android:id="@+id/cal_spinner"
+        android:layout_width="match_parent"
+        android:layout_height="36dp"
+        android:background="@drawable/text_input_layout" />
 
     <Button
         android:id="@+id/remind_btn"
         android:layout_width="100dp"
         android:layout_height="wrap_content"
+        android:background="@drawable/btn_remind"
         android:layout_gravity="right"
         android:text="Remind" />
 </LinearLayout>

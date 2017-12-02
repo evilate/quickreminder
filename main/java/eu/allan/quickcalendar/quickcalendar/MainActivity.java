@@ -19,6 +19,7 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -46,7 +47,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        System.out.println("ONCREATE");
         // Verify that all required contact permissions have been granted.
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_CALENDAR)
                 != PackageManager.PERMISSION_GRANTED
@@ -54,13 +55,17 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 != PackageManager.PERMISSION_GRANTED) {
             // Contacts permissions have not been granted.
             //requestContactsPermissions();
+            System.out.println("this.askForPermission();");
             this.askForPermission();
+
 
         } else {
 
             // Contact permissions have been granted. Show the contacts fragment.
             //showContactDetails();
             this.doCreateSpinner();
+            getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+
         }
         textInput = (EditText) findViewById(R.id.text_input);
         textInput.requestFocus();
@@ -99,8 +104,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             public void onTextChanged(CharSequence s, int start, int before, int count) {
 
                 TextView myOutputBox = (TextView) findViewById(R.id.text_output);
+                TextView myOutputBoxDate = (TextView) findViewById(R.id.date_output);
                 QuickCalendar qc = new QuickCalendar(s + "", MainActivity.this);
-                myOutputBox.setText(qc.getTheTextAndDate());
+                myOutputBox.setText(qc.getTheText());
+                myOutputBoxDate.setText(qc.getTheDateString());
 
             }
         });
@@ -273,28 +280,26 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         if(ContextCompat.checkSelfPermission(this,
                 Manifest.permission.READ_CALENDAR)
                 != PackageManager.PERMISSION_GRANTED) {
-
+            System.out.println("!= PackageManager.PERMISSION_GRANTED");
             // Should we show an explanation?
             if (ActivityCompat.shouldShowRequestPermissionRationale(this,
                     Manifest.permission.READ_CALENDAR)) {
-
+                System.out.println("Manifest.permission.READ_CALENDAR");
                 // Show an explanation to the user *asynchronously* -- don't block
                 // this thread waiting for the user's response! After the user
                 // sees the explanation, try again to request the permission.
 
-            } else {
-
-                // No explanation needed, we can request the permission.
 
                 ActivityCompat.requestPermissions(this,
                         new String[]{Manifest.permission.READ_CALENDAR},
                         MY_PERMISSIONS_REQUEST_READ_CALENDAR);
-
+                System.out.println("MY_PERMISSIONS_REQUEST_READ_CALENDAR");
                 // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
                 // app-defined int constant. The callback method gets the
                 // result of the request.
             }
         }
+
         if(ContextCompat.checkSelfPermission(this,
                 Manifest.permission.READ_CALENDAR)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -321,6 +326,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             }
         }
 
+
     }
     @Override
     public void onRequestPermissionsResult(int requestCode,
@@ -336,10 +342,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
                 } else {
                     // Ingen adgang til kalenderen
-                    /*Toast.makeText(MainActivity.this,
+                    Toast.makeText(MainActivity.this,
                             "NEED CALENDAR ACCESS",
                             Toast.LENGTH_LONG).show();
-                    this.finish();*/
+                    this.finish();
                 }
                 return;
             }
