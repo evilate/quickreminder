@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -16,7 +17,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
@@ -42,6 +42,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private static final String TAG = "MAINACT";
     private Spinner calendarSpinner;
     private EditText textInput;
+    private String calendarAddString = "+ Add Calendar";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,7 +75,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if ((event != null && (event.getKeyCode() == KeyEvent.KEYCODE_ENTER)) || (actionId == EditorInfo.IME_ACTION_DONE)) {
                     //Log.i(TAG,"Enter pressed");
-                    MainActivity.this.createReminder();
+                    if(MainActivity.this.textInput.getText().toString().length() > 2) {
+                        //MainActivity.this.checkReminder();
+                    }
                 }
                 return false;
             }
@@ -87,7 +90,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
                         (keyCode == KeyEvent.KEYCODE_ENTER)) {
                     // Perform action on key press
-                    MainActivity.this.createReminder();
+                    MainActivity.this.checkReminder();
                     return true;
                 }
                 return false;
@@ -103,11 +106,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
             public void onTextChanged(CharSequence s, int start, int before, int count) {
 
-                TextView myOutputBox = (TextView) findViewById(R.id.text_output);
-                TextView myOutputBoxDate = (TextView) findViewById(R.id.date_output);
+                //TextView myOutputBox = (TextView) findViewById(R.id.text_output);
+                TextView myOutputBoxDate = (TextView) findViewById(R.id.text_date_output);
+                TextView myOutputBoxTime = (TextView) findViewById(R.id.text_time_output);
                 QuickCalendar qc = new QuickCalendar(s + "", MainActivity.this);
-                myOutputBox.setText(qc.getTheText());
+                //myOutputBox.setText(qc.getTheText());
                 myOutputBoxDate.setText(qc.getTheDateString());
+                myOutputBoxTime.setText(qc.getTheTimeString());
 
             }
         });
@@ -117,20 +122,35 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             @Override
             public void onClick(View v) {
                 // Klikket
-                MainActivity.this.createReminder();
-
+                MainActivity.this.checkReminder();
             }
         });
-    }
+        TextView myOutputBoxDate = (TextView) findViewById(R.id.text_date_output);
+        TextView myOutputBoxTime = (TextView) findViewById(R.id.text_time_output);
+        QuickCalendar qc = new QuickCalendar("", MainActivity.this);
+        //myOutputBox.setText(qc.getTheText());
+        myOutputBoxDate.setText(qc.getTheDateString());
+        myOutputBoxTime.setText(qc.getTheTimeString());
 
+
+
+    }
+    private void checkReminder(){
+        if(this.textInput.getText().toString().length() > 0){
+            this.createReminder();
+        }else{
+            Toast.makeText(MainActivity.this, "Please enter text", Toast.LENGTH_LONG).show();
+        }
+    }
     private void createReminder() {
-        System.out.println("createReminder");
+        System.out.println("checkReminder");
         QuickCalendar qc = new QuickCalendar(this.textInput.getText().toString(), MainActivity.this);
 
 
         long calID = getCalendarId(String.valueOf(calendarSpinner.getSelectedItem()));
-        long startMillis = qc.getTheSeconds()*1000;
-        long endMillis = (qc.getTheSeconds()+1800)*1000;
+        long theSecs = qc.getTheSeconds();
+        long startMillis = theSecs*1000;
+        long endMillis = (theSecs+600)*1000;
 
         Calendar cal = Calendar.getInstance();
         TimeZone tz = cal.getTimeZone();
@@ -186,7 +206,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 // ... do something with event ID
 //
 //
-        Toast.makeText(MainActivity.this, qc.getTheDateString() + "\n" + qc.getTheText(), Toast.LENGTH_LONG).show();
+        Toast.makeText(MainActivity.this, qc.getTheDateAndTimeString(), Toast.LENGTH_LONG).show();
         this.finish();
     }
     private long getCalendarId(String calName) {
@@ -260,17 +280,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         */
             list.add(cur.getString(1));
         }
-
+        //list.add(this.calendarAddString);
         this.calendarSpinner = (Spinner) findViewById(R.id.cal_spinner);
         ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this,
                 android.R.layout.simple_spinner_item, list);
         dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         calendarSpinner.setAdapter(dataAdapter);
-
         SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
-        //String defaultValue = getResources().getString(R.string.lastUsedCalendar);
         String lastUsedCalendar = sharedPref.getString(getString(R.string.lastUsedCalendar), "");
-
         calendarSpinner.setSelection(dataAdapter.getPosition(lastUsedCalendar));
         calendarSpinner.setOnItemSelectedListener(this);
 
@@ -357,11 +374,21 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     @Override
     public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-        SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putString(getString(R.string.lastUsedCalendar), String.valueOf(calendarSpinner.getSelectedItem()));
-        editor.commit();
+        if(String.valueOf(calendarSpinner.getSelectedItem()).equals(this.calendarAddString)){
 
+            Calendar tempCal = Calendar.getInstance();
+            Intent intent = new Intent();
+            intent.setType("vnd.android.cursor.item/event");
+            intent.putExtra("beginTime", tempCal.getTimeInMillis());
+            intent.putExtra("endTime", tempCal.getTimeInMillis());
+            intent.setAction(Intent.ACTION_EDIT);
+            startActivity(intent);
+        }else {
+            SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPref.edit();
+            editor.putString(getString(R.string.lastUsedCalendar), String.valueOf(calendarSpinner.getSelectedItem()));
+            editor.commit();
+        }
     }
 
     @Override

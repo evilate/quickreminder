@@ -8,25 +8,26 @@
     android:orientation="vertical" >
 
     <TextView
-        android:id="@+id/date_output"
+        android:id="@+id/text_date_output"
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:textSize="40dp" />
 
     <TextView
-        android:id="@+id/text_output"
+        android:id="@+id/text_time_output"
         android:layout_width="match_parent"
-        android:layout_height="36dp"
-        android:textSize="22dp"/>
+        android:layout_height="32dp"/>
 
     <EditText
         android:id="@+id/text_input"
         android:layout_width="match_parent"
-        android:layout_height="48dp"
+        android:layout_height="110dp"
+        android:textSize="18dp"
         android:background="@drawable/text_input_layout"
-        android:maxLines="1"
         android:scrollHorizontally="true"
-        android:hint="1h remind me in an hour" />
+        android:hint="1h remind me in an hour"
+        android:gravity="left|top"
+        />
 
     <Spinner
         android:id="@+id/cal_spinner"
@@ -39,6 +40,26 @@
         android:layout_width="100dp"
         android:layout_height="wrap_content"
         android:background="@drawable/btn_remind"
-        android:layout_gravity="right"
+        android:layout_gravity="right|top"
         android:text="Remind" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="m = Minutes" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="h = Hours" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="d = days" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="w = Weeks" />
 </LinearLayout>

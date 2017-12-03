@@ -2,9 +2,11 @@ package eu.allan.quickcalendar.quickcalendar;
 
 import android.content.Context;
 
+import java.text.DateFormat;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.TimeZone;
 
 /**
@@ -16,18 +18,24 @@ public class QuickCalendar {
 
 
     private String theText;
+    private String theDateAndTimeString;
     private String theDateString;
+    private String theTimeString;
     private long theSeconds;
+    private long theSecondsDefault = 600;
 
     public QuickCalendar(String str, Context context){
         this.context = context;
         this.theText = "";
-        this.theDateString = "";
+        this.theDateAndTimeString = "";
         this.theSeconds = 0;
         this.doSetSecondsAndString(str);
-        if(theSeconds != 0){
+        if(theSeconds == 0){
+            createDate(theSecondsDefault*1000);
+        }else{
             createDate(theSeconds*1000);
         }
+
     }
 
     private void createDate(long secs){
@@ -37,15 +45,42 @@ public class QuickCalendar {
         Calendar beginTime = Calendar.getInstance();
         startMillis = beginTime.getTimeInMillis()+secs;
         Format dateFormat = android.text.format.DateFormat.getDateFormat(context);
+        //String pattern = ((SimpleDateFormat) dateFormat).;
         String pattern = ((SimpleDateFormat) dateFormat).toLocalizedPattern();
+        //String pattern = DateFormat.getDateTimeInstance().format(startMillis+offsetFromUtc);
+        //SimpleDateFormat df = new SimpleDateFormat("HH:mm " + pattern);
         SimpleDateFormat df = new SimpleDateFormat("HH:mm " + pattern);
         df.setTimeZone(TimeZone.getTimeZone("GMT"));
-        this.theDateString = df.format(startMillis);
+        TimeZone tz = TimeZone.getDefault();
+        Date now = new Date();
+        long offsetFromUtc = tz.getOffset(now.getTime());
+        offsetFromUtc = 0;
+        System.out.println("offsetFromUtc: " + offsetFromUtc);
+        //this.theDateAndTimeString = df.format((startMillis+offsetFromUtc));
+        this.theDateAndTimeString = df.format((startMillis+offsetFromUtc));
+
+
+        //now.setTime(startMillis+offsetFromUtc);
+        //df = new SimpleDateFormat("HH:mm d. MMM. yyyy");
+        //this.theDateAndTimeString = df.format((startMillis+offsetFromUtc));
+
+        df = new SimpleDateFormat("d. MMM yyyy");
+        this.theDateString = df.format((startMillis+offsetFromUtc));
+        df = new SimpleDateFormat("HH:mm");
+        this.theTimeString = df.format((startMillis+offsetFromUtc));
+        System.out.println("theTimeString: " + theTimeString);
     }
 
     private void doSetSecondsAndString(String str){
+        str = str.replaceAll("\n", "");
         String[] splitStr = str.split("\\s+");
-        String testString = splitStr[0];
+        String testString;
+        if(splitStr.length >= 0){
+            testString = splitStr[0];
+        }else{
+            testString = "";
+        }
+
         String num = "";
         String modifier = "";
         for(int i = 0; i < testString.length(); i++){
@@ -108,13 +143,28 @@ public class QuickCalendar {
         return theText;
     }
     public String getTheTextAndDate() {
-        return theDateString + " " + theText;
+        return theDateAndTimeString + " " + theText;
     }
+    public String getTheDateAndTimeString() {
+        return theDateAndTimeString;
+    }
+    public long getTheSeconds() {
+        long retval = theSeconds;
+        if(theSeconds == 0){
+            retval = theSecondsDefault;
+        }
+        return retval;
+    }
+
     public String getTheDateString() {
         return theDateString;
     }
-    public long getTheSeconds() {
-        return theSeconds;
-    }
 
+    public String getTheTimeString() {
+        String retval = theTimeString;
+        if(this.theSeconds == 0){
+            retval = theTimeString + " (" + (this.theSecondsDefault/60) + " minutes default)";
+        }
+        return retval;
+    }
 }
