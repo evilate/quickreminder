@@ -50,13 +50,18 @@ public class QuickCalendar {
         //String pattern = DateFormat.getDateTimeInstance().format(startMillis+offsetFromUtc);
         //SimpleDateFormat df = new SimpleDateFormat("HH:mm " + pattern);
         SimpleDateFormat df = new SimpleDateFormat("HH:mm " + pattern);
-        df.setTimeZone(TimeZone.getTimeZone("GMT"));
-        TimeZone tz = TimeZone.getDefault();
-        Date now = new Date();
-        long offsetFromUtc = tz.getOffset(now.getTime());
-        offsetFromUtc = 0;
-        System.out.println("offsetFromUtc: " + offsetFromUtc);
+        //df.setTimeZone(TimeZone.getTimeZone("GMT"));
+        //TimeZone tz = TimeZone.getDefault();
+        //Date now = new Date();
+        //long offsetFromUtc = tz.getOffset(now.getTime());
+        //offsetFromUtc = 0;
+        //System.out.println("offsetFromUtc: " + offsetFromUtc);
         //this.theDateAndTimeString = df.format((startMillis+offsetFromUtc));
+        Calendar cal = Calendar.getInstance();
+        TimeZone tz = cal.getTimeZone();
+        Date now = new Date();
+        long offsetFromUtc = 0;//tz.getOffset(now.getTime());
+
         this.theDateAndTimeString = df.format((startMillis+offsetFromUtc));
 
 
@@ -75,10 +80,10 @@ public class QuickCalendar {
         str = str.replaceAll("\n", "");
         String[] splitStr = str.split("\\s+");
         String testString;
-        if(splitStr.length >= 0){
+        if(splitStr.length > 0){
             testString = splitStr[0];
         }else{
-            testString = "";
+            testString = str;
         }
 
         String num = "";
